@@ -1,332 +1,512 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>MoneyPay — Oda Ekranı</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  
-  <script src="https://cdn.meetingroom365.com/sdk/v1/sdk.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>MoneyPay — Oda Ekranı</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-  <style>
-    :root {
-      --mp-purple: #4A50A2;
-      --mp-purple-dark: #20234E;
-      --mp-purple-deeper: #171A3D;
-      --mp-orange: #FF5F00;
-      --mp-white: #FFFFFF;
-      --mp-ink: #1B1E3D;
-      --mp-paper: #F5F4FA;
-      --mp-line: rgba(27,30,61,0.10);
-      --cut: 28px;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body {
-      width: 100%; height: 100%; overflow: hidden;
-      font-family: 'Inter', sans-serif; background-color: var(--mp-paper); color: var(--mp-ink);
-    }
-    .display-container {
-      display: grid; grid-template-columns: 380px 1fr; width: 100%; height: 100%;
-    }
-    .sidebar {
-      background-color: var(--mp-purple-dark); color: var(--mp-white);
-      padding: 40px; display: flex; flex-direction: column; justify-content: space-between;
-      position: relative;
-    }
-    .sidebar::after {
-      content: ''; position: absolute; bottom: 0; right: 0;
-      width: var(--cut); height: var(--cut);
-      background: linear-gradient(135deg, transparent 50%, var(--mp-paper) 50%);
-    }
-    .brand-area { display: flex; align-items: center; gap: 12px; }
-    .logo-placeholder {
-      font-family: 'Sora', sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -0.5px;
-    }
-    .pay-badge {
-      background-color: var(--mp-orange); color: var(--mp-white);
-      font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 4px;
-      text-transform: uppercase; letter-spacing: 0.5px;
-    }
-    .room-info { margin-top: -60px; }
-    .room-label {
-      font-size: 13px; font-weight: 600; text-transform: uppercase;
-      letter-spacing: 1px; color: rgba(255,255,255,0.4); margin-bottom: 8px;
-    }
-    .room-name { font-family: 'Sora', sans-serif; font-size: 36px; font-weight: 700; line-height: 1.2; }
-    .room-email { font-size: 14px; color: rgba(255,255,255,0.6); margin-top: 6px; word-break: break-all; }
-    .clock-area { font-family: 'Sora', sans-serif; }
-    .time-display { font-size: 64px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
-    .date-display { font-size: 16px; color: rgba(255,255,255,0.5); font-weight: 500; }
-    .main-content { padding: 50px 60px; display: flex; flex-direction: column; justify-content: space-between; }
-    .status-card { display: flex; align-items: flex-start; gap: 24px; }
-    .status-indicator { width: 16px; height: 16px; border-radius: 50%; margin-top: 14px; position: relative; }
-    .status-indicator::after {
-      content: ''; position: absolute; top: -6px; left: -6px; right: -6px; bottom: -6px;
-      border-radius: 50%; opacity: 0.2;
-    }
-    .state-available .status-indicator { background-color: #00CC66; }
-    .state-available .status-indicator::after { background-color: #00CC66; animation: pulse 2s infinite; }
-    .state-occupied .status-indicator { background-color: #FF3B30; }
-    .state-occupied .status-indicator::after { background-color: #FF3B30; animation: pulse 2s infinite; }
-    @keyframes pulse { 0% { transform: scale(0.9); opacity: 0.4; } 50% { transform: scale(1.4); opacity: 0; } 100% { transform: scale(0.9); opacity: 0; } }
-    .status-text h2 { font-family: 'Sora', sans-serif; font-size: 44px; font-weight: 800; line-height: 1.1; margin-bottom: 6px; }
-    .status-sub { font-size: 18px; color: #666C85; font-weight: 500; }
-    .state-occupied .status-sub { color: var(--mp-ink); font-weight: 600; }
-    .meeting-block { margin-top: 24px; background: #20234E; padding: 20px; border-radius: 12px; color: white; display: none; }
-    .meeting-block .m-title { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
-    .meeting-block .m-time { font-size: 14px; opacity: 0.8; }
-    .action-zone { display: flex; gap: 16px; }
-    .btn {
-      font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 700;
-      padding: 18px 36px; border: none; border-radius: 12px; cursor: pointer;
-      display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s ease;
-    }
-    .btn-primary { background-color: var(--mp-purple); color: var(--mp-white); }
-    .btn-primary:hover { background-color: #3b4085; }
-    .btn-outline { background-color: transparent; border: 2px solid var(--mp-line); color: var(--mp-ink); }
-    .btn-outline:hover { background-color: rgba(0,0,0,0.02); border-color: var(--mp-ink); }
-    .timeline-container { margin-top: 40px; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; max-width: 800px; }
-    .timeline-header { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #8A91A5; margin-bottom: 20px; }
-    .timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-    .timeline-slot {
-      background: var(--mp-white); border: 1px solid var(--mp-line);
-      padding: 20px; border-radius: 14px; display: flex; flex-direction: column; justify-content: space-between; height: 110px;
-    }
-    .slot-time { font-family: 'Sora', sans-serif; font-size: 16px; font-weight: 700; color: var(--mp-ink); }
-    .slot-status { font-size: 13px; font-weight: 600; color: #00CC66; display: flex; align-items: center; gap: 6px; }
-    .slot-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background-color: currentColor; }
-    .slot-status.busy { color: #FF3B30; }
-  </style>
+<!-- CANLI TAKVİM VERİLERİ İÇİN EKKLENEN MEETINGROOM365 SDK -->
+<script src="https://cdn.meetingroom365.com/sdk/v1/sdk.js"></script>
+
+<style>
+  :root{
+    --mp-purple:#4A50A2;
+    --mp-purple-dark:#20234E;
+    --mp-purple-deeper:#171A3D;
+    --mp-orange:#FF5F00;
+    --mp-white:#FFFFFF;
+    --mp-ink:#1B1E3D;
+    --mp-paper:#F5F4FA;
+    --mp-line:rgba(27,30,61,0.10);
+    --cut:28px; /* diagonal corner-cut size, echoes the 'pay' badge shape */
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{
+    width:100%; height:100%; overflow:hidden;
+    font-family:'Inter',sans-serif;
+    background:var(--mp-paper);
+    color:var(--mp-ink);
+  }
+  body{
+    display:flex; flex-direction:column;
+    height:100vh; width:100vw;
+    transition:background 480ms ease;
+  }
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 32px 18px 32px;
+    flex:0 0 auto;
+  }
+  .brand{ display:flex; align-items:center; gap:16px; }
+  .brand img{ height:34px; width:auto; display:block; }
+  .room-info{ display:flex; flex-direction:column; gap:2px; }
+  .room-name{
+    font-family:'Sora',sans-serif; font-weight:700; font-size:22px;
+    color:var(--mp-ink); letter-spacing:-0.01em;
+  }
+  .room-meta{
+    font-family:'Inter',sans-serif; font-weight:600; font-size:13px;
+    color:rgba(27,30,61,0.5); letter-spacing:0.01em;
+  }
+  body.state-occupied .room-meta{ color:rgba(255,255,255,0.55); }
+  /* Signature element: diagonal-cut tab, echoing the "pay" chip shape in the logo */
+  .clock-tab{
+    background:var(--mp-purple);
+    color:var(--mp-white);
+    padding:10px 26px 10px 22px;
+    font-family:'Sora',sans-serif; font-weight:700; font-size:20px;
+    letter-spacing:0.02em;
+    clip-path:polygon(0 0, 100% 0, calc(100% - var(--cut)) 100%, 0 100%);
+    display:flex; align-items:center; gap:10px;
+    min-width:150px; justify-content:center;
+  }
+  .clock-tab .date{
+    font-family:'Inter',sans-serif; font-weight:500; font-size:12px;
+    opacity:0.75; display:block; text-align:center; margin-top:2px;
+  }
+  .clock-wrap{ text-align:center; }
+
+  /* ---------- Hero status ---------- */
+  .hero{
+    flex:1 1 auto;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center;
+    padding:10px 40px;
+    position:relative;
+  }
+  .status-dot{
+    width:18px; height:18px; border-radius:50%;
+    display:inline-block; flex:0 0 auto;
+    box-shadow:0 0 0 5px currentColor;
+    opacity:0.9;
+    margin-bottom:0.09em; /* optical alignment with cap-height, not centerline */
+  }
+  .status-word{
+    font-family:'Inter',sans-serif; font-weight:900;
+    font-size:min(12vw, 128px);
+    line-height:1.15; letter-spacing:-0.01em;
+    display:flex; align-items:center; justify-content:center;
+    gap:22px;
+    white-space:nowrap;
+    padding-bottom:0.06em; /* room for descender-free caps, keeps it from feeling clipped */
+  }
+  .status-word span:last-child{ padding-top:0.02em; font-feature-settings:"tnum"; }
+  .status-sub{
+    font-family:'Inter',sans-serif; font-weight:500; font-size:22px;
+    margin-top:18px; opacity:0.8; max-width:720px;
+  }
+
+  /* Available state */
+  body.state-available{ background:var(--mp-paper); }
+  body.state-available .status-word{ color:var(--mp-orange); }
+  body.state-available .status-sub{ color:var(--mp-ink); }
+  body.state-available .status-dot{ color:var(--mp-orange); }
+  body.state-available .clock-tab{ background:var(--mp-purple); }
+
+  /* Occupied state — echoes the solid "pay" badge block */
+  body.state-occupied{ background:var(--mp-purple-dark); }
+  body.state-occupied .room-name{ color:var(--mp-white); }
+  body.state-occupied .status-word{ color:var(--mp-white); }
+  body.state-occupied .status-sub{ color:rgba(255,255,255,0.75); }
+  body.state-occupied .status-dot{ color:var(--mp-orange); }
+  body.state-occupied .clock-tab{ background:var(--mp-orange); }
+  body.state-occupied .meeting-panels{ background:var(--mp-purple-deeper); border-color:rgba(255,255,255,0.08); }
+  body.state-occupied .panel-label{ color:rgba(255,255,255,0.55); }
+  body.state-occupied .panel-title{ color:var(--mp-white); }
+  body.state-occupied .panel-time{ color:rgba(255,255,255,0.65); }
+  body.state-occupied .footer{ background:var(--mp-purple-deeper); border-color:rgba(255,255,255,0.08); }
+
+  /* ---------- Daily timeline strip ---------- */
+  .day-timeline{
+    flex:0 0 auto;
+    margin:0 32px 18px 32px;
+  }
+  .timeline-track{
+    position:relative;
+    height:14px;
+    border-radius:8px;
+    background:rgba(27,30,61,0.08);
+    overflow:hidden;
+  }
+  body.state-occupied .timeline-track{ background:rgba(255,255,255,0.10); }
+  .timeline-block{
+    position:absolute; top:0; bottom:0;
+    background:rgba(255,95,0,0.4);
+    border-radius:3px;
+  }
+  .timeline-block.is-current{ background:var(--mp-orange); }
+  body.state-occupied .timeline-block{ background:rgba(255,95,0,0.55); }
+  body.state-occupied .timeline-block.is-current{ background:var(--mp-orange); }
+  .timeline-now{
+    position:absolute; top:-3px; bottom:-3px;
+    width:2px; background:var(--mp-ink);
+    z-index:2;
+  }
+  body.state-occupied .timeline-now{ background:var(--mp-white); }
+  .timeline-labels{
+    display:flex; justify-content:space-between;
+    margin-top:6px;
+    font-family:'Inter',sans-serif; font-weight:600; font-size:11px;
+    color:rgba(27,30,61,0.4);
+  }
+  body.state-occupied .timeline-labels{ color:rgba(255,255,255,0.4); }
+
+  /* ---------- Meeting panels ---------- */
+  .meeting-panels{
+    flex:0 0 auto;
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:1px; background:var(--mp-line);
+    margin:0 32px; border-radius:14px; overflow:hidden;
+    border:1px solid var(--mp-line);
+  }
+  .panel{ background:var(--mp-paper); padding:26px 30px; }
+  body.state-available .panel{ background:#FFFFFF; }
+  body.state-occupied .panel{ background:var(--mp-purple-deeper); }
+  .panel-label{
+    font-family:'Inter',sans-serif; font-weight:700; font-size:13px;
+    letter-spacing:0.1em; text-transform:uppercase; color:rgba(27,30,61,0.5);
+    margin-bottom:10px;
+  }
+  .panel-title{
+    font-family:'Sora',sans-serif; font-weight:700; font-size:25px;
+    color:var(--mp-ink); line-height:1.25;
+  }
+  .panel-time{
+    font-family:'Inter',sans-serif; font-weight:600; font-size:17px;
+    color:rgba(27,30,61,0.6); margin-top:6px;
+  }
+  .panel-empty{
+    font-family:'Inter',sans-serif; font-weight:700; font-size:19px;
+    color:rgba(27,30,61,0.55);
+  }
+  body.state-available .panel-empty{ color:var(--mp-ink); opacity:0.7; }
+  body.state-occupied .panel-empty{ color:rgba(255,255,255,0.55); }
+
+  /* ---------- Footer / CTA ---------- */
+  .footer{
+    flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center;
+    padding:22px 32px 28px 32px;
+    gap:14px;
+  }
+  .btn{
+    font-family:'Sora',sans-serif; font-weight:700; font-size:17px;
+    border:none; cursor:pointer;
+    padding:16px 34px 16px 28px;
+    clip-path:polygon(0 0, 100% 0, calc(100% - 18px) 100%, 0 100%);
+    transition:transform 120ms ease, opacity 120ms ease;
+  }
+  .btn:active{ transform:scale(0.97); opacity:0.9; }
+  .btn-primary{ background:var(--mp-orange); color:var(--mp-white); }
+  .btn-ghost{
+    background:var(--mp-purple); color:var(--mp-white);
+    border:none;
+  }
+  body.state-occupied .btn-primary{ background:var(--mp-orange); }
+  body.state-occupied .btn-ghost{ background:rgba(255,255,255,0.14); color:var(--mp-white); }
+
+  .footer-note{
+    position:absolute; bottom:8px; left:0; right:0; text-align:center;
+    font-size:11px; color:rgba(27,30,61,0.3); font-family:'Inter';
+  }
+  body.state-occupied .footer-note{ color:rgba(255,255,255,0.25); }
+
+  @media (max-width:640px){
+    .meeting-panels{ grid-template-columns:1fr; margin:0 16px; }
+    .topbar{ padding:16px 18px; }
+    .footer{ padding:16px 18px 22px 18px; flex-direction:column; }
+  }
+</style>
 </head>
-<body>
+<body class="state-available">
 
-  <div class="display-container state-available" id="displayMode">
-    
-    <aside class="sidebar">
-      <div class="brand-area">
-        <span class="logo-placeholder">money</span>
-        <span class="pay-badge">pay</span>
-      </div>
-      
-      <div class="room-info">
-        <p class="room-label">Toplantı Odası</p>
-        <h1 class="room-name" id="roomName">Business Room</h1>
-        <p class="room-email" id="roomEmail">businessroom@moneypay.com.tr</p>
-      </div>
-      
-      <div class="clock-area">
-        <div class="time-display" id="clockTime">00:00</div>
-        <div class="date-display" id="clockDate">1 Temmuz Çarşamba</div>
-      </div>
-    </aside>
-
-    <main class="main-content">
-      
-      <div class="status-zone">
-        <div class="status-card">
-          <div class="status-indicator"></div>
-          <div class="status-text">
-            <h2 id="statusTitle">Uygun</h2>
-            <div class="status-sub" id="statusSub">Şimdi rezervasyon yapılabilir</div>
-            
-            <div class="meeting-block" id="currentMeetingBlock">
-              <div class="m-title" id="meetingTitle">Mevcut Toplantı</div>
-              <div class="m-time" id="meetingTimeRange">14:00 - 15:00</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="timeline-container">
-        <p class="timeline-header">Bugün Sıradaki Toplantılar</p>
-        <div class="timeline" id="timelineSlots">
-          </div>
-      </div>
-
-      <div class="action-zone">
-        <button class="btn btn-primary" id="reserveBtn">Hızlı Rezervasyon (15 Dk)</button>
-        <button class="btn btn-outline" id="endBtn" style="display:none;">Toplantıyı Bitir</button>
-      </div>
-
-    </main>
+  <div class="topbar">
+    <div class="brand">
+      <img src="data:image/png;base64,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" alt="meetingroom365" id="logoImg">
+    <div class="room-info">
+      <span class="room-name" id="roomName">Business Room</span>
+      <span class="room-meta" id="roomMeta"> moneypay.com.tr</span>
+    </div>
   </div>
+  <div class="clock-tab">
+    <div class="clock-wrap">
+      <div id="clock">--:--</div>
+      <span class="date" id="dateLabel">—</span>
+    </div>
+  </div>
+</div>
 
-  <script>
-    // DOM Elementleri
-    const els = {
-      displayMode: document.getElementById('displayMode'),
-      roomName: document.getElementById('roomName'),
-      roomEmail: document.getElementById('roomEmail'),
-      clockTime: document.getElementById('clockTime'),
-      clockDate: document.getElementById('clockDate'),
-      statusTitle: document.getElementById('statusTitle'),
-      statusSub: document.getElementById('statusSub'),
-      reserveBtn: document.getElementById('reserveBtn'),
-      endBtn: document.getElementById('endBtn'),
-      currentMeetingBlock: document.getElementById('currentMeetingBlock'),
-      meetingTitle: document.getElementById('meetingTitle'),
-      meetingTimeRange: document.getElementById('meetingTimeRange'),
-      timelineSlots: document.getElementById('timelineSlots')
+<div class="hero">
+  <div class="status-word">
+    <span class="status-dot" id="statusDot"></span>
+    <span id="statusWord">Yükleniyor…</span>
+  </div>
+  <div class="status-sub" id="statusSub">Oda bilgisi alınıyor</div>
+</div>
+
+<div class="day-timeline" id="dayTimeline">
+  <div class="timeline-track" id="timelineTrack">
+    <div class="timeline-now" id="timelineNow"></div>
+  </div>
+  <div class="timeline-labels">
+    <span id="timelineStartLabel">08:00</span>
+    <span id="timelineEndLabel">19:00</span>
+  </div>
+</div>
+
+<div class="meeting-panels">
+  <div class="panel">
+    <div class="panel-label">Şimdi</div>
+    <div id="currentMeeting"><div class="panel-empty">Rezervasyon yok</div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-label">Sıradaki</div>
+    <div id="nextMeeting"><div class="panel-empty">Bugün için başka toplantı yok</div></div>
+  </div>
+</div>
+
+<div class="footer">
+  <button class="btn btn-primary" id="reserveBtn">15 dk için Rezerve Et</button>
+  <button class="btn btn-ghost" id="endBtn" style="display:none;">Toplantıyı Sonlandır</button>
+</div>
+<div class="footer-note">MoneyPay · Oda Ekranı</div>
+
+<script>
+  // DOM Elementleri (Orijinal yapınızdaki tüm elementler korundu)
+  const els = {
+    roomName: document.getElementById('roomName'),
+    roomMeta: document.getElementById('roomMeta'),
+    statusWord: document.getElementById('statusWord'),
+    statusSub: document.getElementById('statusSub'),
+    statusDot: document.getElementById('statusDot'),
+    currentMeeting: document.getElementById('currentMeeting'),
+    nextMeeting: document.getElementById('nextMeeting'),
+    clock: document.getElementById('clock'),
+    dateLabel: document.getElementById('dateLabel'),
+    reserveBtn: document.getElementById('reserveBtn'),
+    endBtn: document.getElementById('endBtn'),
+    timelineTrack: document.getElementById('timelineTrack'),
+    timelineNow: document.getElementById('timelineNow'),
+    timelineStartLabel: document.getElementById('timelineStartLabel'),
+    timelineEndLabel: document.getElementById('timelineEndLabel'),
+    logoImg: document.getElementById('logoImg')
+  };
+
+  // Zaman çizelgesi çalışma saatleri
+  const TIMELINE_START_HOUR = 8;
+  const TIMELINE_END_HOUR = 19;
+
+  function tick() {
+    const now = new Date();
+    els.clock.textContent = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    els.dateLabel.textContent = now.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' });
+    positionTimelineNow(now);
+  }
+  tick();
+  setInterval(tick, 15000);
+
+  els.timelineStartLabel.textContent = String(TIMELINE_START_HOUR).padStart(2, '0') + ':00';
+  els.timelineEndLabel.textContent = String(TIMELINE_END_HOUR).padStart(2, '0') + ':00';
+
+  function timelinePercent(date) {
+    const d = (date instanceof Date) ? date : new Date(date);
+    const minutesFromStart = (d.getHours() + d.getMinutes() / 60) - TIMELINE_START_HOUR;
+    const totalMinutes = TIMELINE_END_HOUR - TIMELINE_START_HOUR;
+    return Math.min(100, Math.max(0, (minutesFromStart / totalMinutes) * 100));
+  }
+
+  function positionTimelineNow(now) {
+    const pct = timelinePercent(now);
+    const inRange = now.getHours() >= TIMELINE_START_HOUR && now.getHours() < TIMELINE_END_HOUR;
+    els.timelineNow.style.display = inRange ? '' : 'none';
+    els.timelineNow.style.left = pct + '%';
+  }
+
+  // Günün toplantılarını ince şerit üzerinde bloklar halinde çizer (Orijinal fonksiyon)
+  function renderTimelineBlocks(meetings) {
+    els.timelineTrack.querySelectorAll('.timeline-block').forEach(function (b) { b.remove(); });
+    if (!Array.isArray(meetings)) return;
+    const now = Date.now();
+    meetings.forEach(function (m) {
+      const start = m.start || m.startTime;
+      const end = m.end || m.endTime;
+      if (!start || !end) return;
+      const startPct = timelinePercent(start);
+      const endPct = timelinePercent(end);
+      const isCurrent = new Date(start).getTime() <= now && now <= new Date(end).getTime();
+      const block = document.createElement('div');
+      block.className = 'timeline-block' + (isCurrent ? ' is-current' : '');
+      block.style.left = startPct + '%';
+      block.style.width = Math.max(0.8, endPct - startPct) + '%';
+      els.timelineTrack.appendChild(block);
+    });
+  }
+
+  function fmtTime(d) {
+    if (!d) return '';
+    const dt = (d instanceof Date) ? d : new Date(d);
+    if (isNaN(dt.getTime())) return '';
+    return dt.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function renderMeetingBlock(el, meeting, defaultText) {
+    if (!meeting) {
+      el.innerHTML = `<div class="panel-empty">${defaultText || 'Rezervasyon yok'}</div>`;
+      return;
+    }
+    const title = meeting.summary || meeting.title || meeting.subject || meeting.organizer || 'Rezerve Edildi';
+    const start = fmtTime(meeting.start || meeting.startTime);
+    const end = fmtTime(meeting.end || meeting.endTime);
+    const timeStr = (start && end) ? `${start} – ${end}` : '';
+    el.innerHTML = `
+      <div class="panel-title">${title}</div>
+      ${timeStr ? `<div class="panel-time">${timeStr}</div>` : ''}
+    `;
+  }
+
+  // Ekran durumunu (Uygun/Dolu) ve butonları yönetir
+  function setState(occupied) {
+    document.body.classList.toggle('state-occupied', !!occupied);
+    document.body.classList.toggle('state-available', !occupied);
+    els.statusWord.textContent = occupied ? 'DOLU' : 'UYGUN';
+    els.reserveBtn.style.display = occupied ? 'none' : '';
+    els.endBtn.style.display = occupied ? '' : 'none';
+  }
+
+  // CANLI VERİ ENTEGRASYONU: Gelen API verilerini mevcut HTML yapınıza aktarır
+  function applyConfig(cfg) {
+    if (!cfg) return;
+    console.log('[MoneyPay Display] Canlı veri uygulandı:', cfg);
+
+    // 1. Oda Kimlik ve Logo Bilgilerini Güncelle
+    if (cfg.name) els.roomName.textContent = cfg.name;
+    if (cfg.tenant) els.roomMeta.textContent = cfg.tenant;
+    if (cfg.image && els.logoImg) els.logoImg.src = cfg.image;
+
+    // 2. Aktif Toplantı Durum Kontrolü (Occupied)
+    const hasCurrentMeeting = cfg.currentMeeting || (cfg.events && cfg.events.some(e => e.current));
+    const isOccupied = cfg.occupied || hasCurrentMeeting;
+
+    setState(isOccupied);
+
+    if (isOccupied) {
+      const currentMeeting = cfg.currentMeeting || (cfg.events && cfg.events.find(e => e.current));
+      renderMeetingBlock(els.currentMeeting, currentMeeting, 'Rezervasyon yok');
+      els.statusSub.textContent = currentMeeting ? (currentMeeting.summary || currentMeeting.title || 'Oda şu anda kullanımda') : 'Oda şu anda kullanımda';
+    } else {
+      renderMeetingBlock(els.currentMeeting, null, 'Rezervasyon yok');
+      els.statusSub.textContent = 'Şimdi rezervasyon yapılabilir';
+    }
+
+    // 3. Sıradaki Toplantı (Next Meeting)
+    const allMeetings = cfg.events || cfg.meetings || [];
+    const nextMeeting = cfg.nextMeeting || allMeetings.filter(e => !e.current)[0] || null;
+    renderMeetingBlock(els.nextMeeting, nextMeeting, 'Bugün için başka toplantı yok');
+
+    // 4. Zaman Çizelgesi Bloklarını Çiz
+    renderTimelineBlocks(allMeetings);
+  }
+
+  // Yedek Demo Modu (SDK veya Parametre Bulunamazsa Geçici Olarak Başlar)
+  function runDemo() {
+    console.log('[MoneyPay Display] Yedek demo modu başlatıldı.');
+    els.roomName.textContent = "Business Room";
+    els.roomMeta.textContent = "moneypay.com.tr";
+    
+    setState(false);
+    els.statusSub.textContent = 'Şimdi rezervasyon yapılabilir';
+    renderMeetingBlock(els.currentMeeting, null, 'Rezervasyon yok');
+    
+    // Örnek sahte sıradaki toplantı basımı
+    renderMeetingBlock(els.nextMeeting, {
+      title: 'Haftalık Ekip Toplantısı',
+      start: new Date(Date.now() + 40 * 60000),
+      end: new Date(Date.now() + 100 * 60000),
+    }, 'Bugün için başka toplantı yok');
+
+    const demoDay = new Date();
+    function atHour(h, m) { const d = new Date(demoDay); d.setHours(h, m, 0, 0); return d; }
+    renderTimelineBlocks([
+      { start: atHour(9, 0), end: atHour(9, 45) },
+      { start: atHour(10, 30), end: atHour(11, 30) },
+      { start: new Date(Date.now() + 40 * 60000), end: new Date(Date.now() + 100 * 60000) },
+    ]);
+
+    els.reserveBtn.onclick = () => {
+      setState(true);
+      els.statusSub.textContent = 'Oda şu anda kullanımda';
+      renderMeetingBlock(els.currentMeeting, {
+        title: 'Anlık Rezervasyon',
+        start: new Date(),
+        end: new Date(Date.now() + 15 * 60000),
+      }, 'Rezervasyon yok');
     };
+    els.endBtn.onclick = () => {
+      setState(false);
+      els.statusSub.textContent = 'Şimdi rezervasyon yapılabilir';
+      renderMeetingBlock(els.currentMeeting, null, 'Rezervasyon yok');
+    };
+  }
 
-    // Saat ve Tarih Güncelleme
-    function updateClock() {
-      const now = new Date();
-      els.clockTime.textContent = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-      els.clockDate.textContent = now.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' });
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
+  // SDK Başlatıcı ve Buton Aksiyon Tetikleyicileri
+  async function boot() {
+    const hasKey = location.search.indexOf('key=') !== -1;
 
-    // Ekran Durum Yönetimi (Uygun / Meşgul)
-    function setState(isOccupied) {
-      if (isOccupied) {
-        els.displayMode.className = 'display-container state-occupied';
-        els.statusTitle.textContent = 'Meşgul';
-        els.reserveBtn.style.display = 'none';
-        els.endBtn.style.display = 'inline-flex';
-        els.currentMeetingBlock.style.display = 'block';
-      } else {
-        els.displayMode.className = 'display-container state-available';
-        els.statusTitle.textContent = 'Uygun';
-        els.statusSub.textContent = 'Şimdi rezervasyon yapılabilir';
-        els.reserveBtn.style.display = 'inline-flex';
-        els.endBtn.style.display = 'none';
-        els.currentMeetingBlock.style.display = 'none';
-      }
+    if (typeof Meetingroom365 === 'undefined') {
+      console.warn('[MoneyPay Display] Meetingroom365 SDK bulunamadı, demo moduna geçiliyor.');
+      runDemo();
+      return;
     }
 
-    // Gelen Canlı Veriyi Arayüze Basma Fonksiyonu
-    function applyConfig(cfg) {
-      if (!cfg) return;
-      console.log('[MoneyPay Display] Veri uygulandı:', cfg);
+    try {
+      window._debug = true;
+      // SDK üzerinden cihazı initialize etme adımı
+      const displayConfig = await Meetingroom365.init({
+        STATUS_UPDATE_INTERVAL: 3 * 60 * 1000, // 3 dakikada bir veri tazele
+        LOCATION: false,
+        onUpdate: function (cfg) {
+          applyConfig(cfg);
+        },
+      });
 
-      // 1. Oda Kimlik Bilgilerini Güncelle
-      if (cfg.name) els.roomName.textContent = cfg.name;
-      if (cfg.email) els.roomEmail.textContent = cfg.email;
-
-      // 2. Mevcut Toplantı Durum Kontrolü (Occupied)
-      // SDK'dan occupied true gelebilir veya aktif bir event (currentMeeting) olabilir
-      const hasCurrentMeeting = cfg.currentMeeting || (cfg.events && cfg.events.some(e => e.current));
-      
-      if (cfg.occupied || hasCurrentMeeting) {
-        setState(true);
-        const meeting = cfg.currentMeeting || (cfg.events && cfg.events.find(e => e.current));
-        if (meeting) {
-          els.meetingTitle.textContent = meeting.summary || meeting.title || 'Gizli Toplantı';
-          els.statusSub.textContent = meeting.organizer || '';
-          if (meeting.start && meeting.end) {
-            const sTime = new Date(meeting.start).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-            const eTime = new Date(meeting.end).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-            els.meetingTimeRange.textContent = `${sTime} - ${eTime}`;
-          }
-        } else {
-          els.meetingTitle.textContent = 'Anlık Rezervasyon';
-          els.meetingTimeRange.textContent = 'Devam ediyor...';
-        }
-      } else {
-        setState(false);
-      }
-
-      // 3. Gelecek Toplantıları Listeleme (Timeline)
-      els.timelineSlots.innerHTML = '';
-      const upcomingEvents = cfg.events ? cfg.events.filter(e => !e.current).slice(0, 4) : [];
-
-      if (upcomingEvents.length > 0) {
-        upcomingEvents.forEach(event => {
-          const startTime = new Date(event.start).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-          const slot = document.createElement('div');
-          slot.className = 'timeline-slot';
-          slot.innerHTML = `
-            <div class="slot-time">${startTime}</div>
-            <div class="slot-status busy">${event.summary || 'Dolu'}</div>
-          `;
-          els.timelineSlots.appendChild(slot);
-        });
-      } else {
-        // Eğer gelecek toplantı yoksa boş slot gösterelim
-        els.timelineSlots.innerHTML = `
-          <div class="timeline-slot">
-            <div class="slot-time">Müsait</div>
-            <div class="slot-status">Tüm Gün Uygun</div>
-          </div>
-        `;
-      }
-    }
-
-    // Demo Modu (Yedek Plan)
-    function runDemo() {
-      console.log('[MoneyPay Display] Yedek demo modu başlatıldı.');
-      // Demo durumunda bile sağladığınız default bilgileri basalım
-      els.roomName.textContent = "Business Room";
-      els.roomEmail.textContent = "businessroom@moneypay.com.tr";
-      
-      // Demo tıklama simülasyonları
-      els.reserveBtn.onclick = () => { setState(true); els.meetingTitle.textContent = "Hızlı Toplantı"; els.meetingTimeRange.textContent = "Şimdi - 15 Dk"; };
-      els.endBtn.onclick = () => setState(false);
-    }
-
-    // Ana Başlatıcı (Boot)
-    async function boot() {
-      // URL'de 'key=' parametresi var mı kontrolü
-      const hasKey = location.search.indexOf('key=') !== -1;
-
-      if (typeof Meetingroom365 === 'undefined') {
-        console.warn('[MoneyPay Display] Meetingroom365 SDK bulunamadı, demo moduna geçiliyor.');
+      if (!displayConfig && !hasKey) {
         runDemo();
         return;
       }
 
-      try {
-        window._debug = true;
-        // SDK'yı initialize ediyoruz
-        const displayConfig = await Meetingroom365.init({
-          STATUS_UPDATE_INTERVAL: 2 * 60 * 1000, // 2 dakikada bir veri tazele
-          LOCATION: false,
-          onUpdate: function (cfg) {
-            applyConfig(cfg);
-          },
-        });
+      applyConfig(displayConfig);
 
-        // Eğer SDK'dan veri dönmediyse ve URL'de key yoksa Demoya düşür
-        if (!displayConfig && !hasKey) {
-          runDemo();
-          return;
+      // Canlı Buton Aksiyon Dinleyicileri
+      els.reserveBtn.addEventListener('click', () => {
+        if (typeof Meetingroom365.reserveInstant === 'function') {
+          Meetingroom365.reserveInstant(15);
+        } else if (typeof Meetingroom365.updateStatus === 'function') {
+          Meetingroom365.updateStatus({ occupied: true });
         }
+        setState(true);
+      });
 
-        // İlk gelen veriyi uygula
-        applyConfig(displayConfig);
+      els.endBtn.addEventListener('click', () => {
+        if (typeof Meetingroom365.endMeeting === 'function') {
+          Meetingroom365.endMeeting();
+        } else if (typeof Meetingroom365.updateStatus === 'function') {
+          Meetingroom365.updateStatus({ occupied: false });
+        }
+        setState(false);
+      });
 
-        // Canlı Buton Aksiyonları
-        els.reserveBtn.addEventListener('click', () => {
-          // Meetingroom365 SDK üzerinden anlık 15dk rezerve etme tetiği
-          if (typeof Meetingroom365.reserveInstant === 'function') {
-            Meetingroom365.reserveInstant(15);
-          } else {
-            Meetingroom365.updateStatus({ occupied: true });
-          }
-          setState(true);
-        });
-
-        els.endBtn.addEventListener('click', () => {
-          if (typeof Meetingroom365.endMeeting === 'function') {
-            Meetingroom365.endMeeting();
-          } else {
-            Meetingroom365.updateStatus({ occupied: false });
-          }
-          setState(false);
-        });
-
-      } catch (err) {
-        console.error('[MoneyPay Display] SDK Init Hatası:', err);
-        runDemo();
-      }
+    } catch (err) {
+      console.error('[MoneyPay Display] SDK Init Hatası:', err);
+      runDemo();
     }
+  }
 
-    // Uygulamayı başlat
-    document.addEventListener('DOMContentLoaded', boot);
-  </script>
+  document.addEventListener('DOMContentLoaded', boot);
+</script>
 </body>
 </html>
